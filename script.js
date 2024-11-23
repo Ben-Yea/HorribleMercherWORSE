@@ -5,19 +5,20 @@ const suggestions = document.getElementById('suggestions');
 const fetchDataButton = document.getElementById('fetchData');
 const pinButton = document.getElementById('pinButton');
 
-const API_URL = 'https://example.com/market-data-api'; // Replace with actual API URL
+const API_URL = 'https://example.com/market-data-api'; // Replace with the real API URL
 
 // Fetch market data from API with fallback to JSON
 async function fetchMarketData() {
     try {
+        console.log('Fetching market data from API...');
         const response = await fetch(API_URL);
         if (!response.ok) throw new Error('API fetch failed');
         const data = await response.json();
-        console.log('Market data fetched from API');
+        console.log('Market data fetched successfully from API:', data);
         populateTable(data);
         populateSuggestions(data);
     } catch (error) {
-        console.warn('API fetch failed, using backup data:', error);
+        console.warn('API fetch failed, using backup JSON:', error);
         fetchBackupData();
     }
 }
@@ -25,14 +26,15 @@ async function fetchMarketData() {
 // Fallback to local market_data.json
 async function fetchBackupData() {
     try {
+        console.log('Fetching market data from backup JSON...');
         const response = await fetch('./market_data.json');
         if (!response.ok) throw new Error('Backup JSON fetch failed');
         const data = await response.json();
-        console.log('Market data fetched from backup JSON');
+        console.log('Market data fetched successfully from JSON:', data);
         populateTable(data);
         populateSuggestions(data);
     } catch (error) {
-        console.error('Failed to fetch backup data:', error);
+        console.error('Failed to fetch backup JSON data:', error);
     }
 }
 
@@ -63,7 +65,7 @@ function populateSuggestions(data) {
     });
 }
 
-// Pin an item by name
+// Pin an item by name (restoring original UI style)
 function pinItem(itemName) {
     const pinnedCard = Array.from(document.querySelectorAll('.pinned-item-card'))
         .find(card => card.querySelector('h4')?.textContent === itemName);
@@ -85,8 +87,9 @@ function pinItem(itemName) {
     card.className = 'pinned-item-card';
     card.innerHTML = `
         <h4>${itemName}</h4>
-        <p>Buy: ${itemRow.cells[1].textContent}</p>
-        <p>Sell: ${itemRow.cells[2].textContent}</p>
+        <p><strong>Buy:</strong> ${itemRow.cells[1].textContent}</p>
+        <p><strong>Sell:</strong> ${itemRow.cells[2].textContent}</p>
+        <p><strong>Profit:</strong> ${itemRow.cells[5].textContent}</p>
         <button class="remove-button" onclick="this.parentElement.remove()">Remove</button>
     `;
     pinnedItems.appendChild(card);
@@ -95,3 +98,6 @@ function pinItem(itemName) {
 // Event Listeners
 fetchDataButton.addEventListener('click', fetchMarketData);
 pinButton.addEventListener('click', () => pinItem(searchBox.value));
+
+// Debugging messages for startup
+console.log('Merching Helper Script Loaded. Ready to fetch market data.');
