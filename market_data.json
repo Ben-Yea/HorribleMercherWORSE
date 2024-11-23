@@ -1,4 +1,6 @@
 [
-    { "name": "Item A", "highestBuyOffer": 100, "lowestSellOffer": 110, "buyVolume": 500, "sellVolume": 300, "profit": 10 },
-    { "name": "Item B", "highestBuyOffer": 200, "lowestSellOffer": 220, "buyVolume": 600, "sellVolume": 400, "profit": 20 }
+    { "name": "Item A", "highestBuyOffer": 100, "lowestSellOffer": 120, "buyVolume": 500, "sellVolume": 300, "profit": 20 },
+    { "name": "Item B", "highestBuyOffer": 200, "lowestSellOffer": 250, "buyVolume": 600, "sellVolume": 400, "profit": 50 },
+    { "name": "Item C", "highestBuyOffer": 150, "lowestSellOffer": 180, "buyVolume": 700, "sellVolume": 500, "profit": 30 },
+    { "name": "Item D", "highestBuyOffer": 300, "lowestSellOffer": 350, "buyVolume": 800, "sellVolume": 600, "profit": 50 }
 ]
