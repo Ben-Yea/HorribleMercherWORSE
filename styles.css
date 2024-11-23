@@ -1,0 +1,42 @@
+/* General Styling */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #121212;
+    color: #e0e0e0;
+    margin: 20px;
+}
+
+/* Table Styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: #1e1e1e;
+}
+th, td {
+    padding: 8px;
+    text-align: center;
+    border: 1px solid #333;
+}
+
+th {
+    background-color: #333;
+    cursor: pointer;
+}
+
+/* Input and Button Styling */
+input[type="text"], button {
+    padding: 8px;
+    margin: 5px;
+}
+
+/* Pinned Items Styling */
+.pinned-items-container {
+    display: flex;
+    gap: 10px;
+}
+.pinned-item-card {
+    background-color: #1e1e1e;
+    padding: 10px;
+    border-radius: 5px;
+}

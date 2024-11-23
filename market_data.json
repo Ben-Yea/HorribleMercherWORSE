@@ -1,0 +1,4 @@
+[
+    { "name": "Item A", "highestBuyOffer": 100, "lowestSellOffer": 110, "buyVolume": 500, "sellVolume": 300, "profit": 10 },
+    { "name": "Item B", "highestBuyOffer": 200, "lowestSellOffer": 220, "buyVolume": 600, "sellVolume": 400, "profit": 20 }
+]
