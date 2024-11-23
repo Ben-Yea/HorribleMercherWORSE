@@ -5,8 +5,7 @@ const suggestions = document.getElementById('suggestions');
 const fetchDataButton = document.getElementById('fetchData');
 const pinButton = document.getElementById('pinButton');
 
-const API_URL = 'https://example.com/market-data-api'; // Replace with the real API URL
-
+const API_URL = 'https://query.idleclans.com/api/PlayerMarket/items/prices/latest';
 // Fetch market data from API with fallback to JSON
 async function fetchMarketData() {
     try {
