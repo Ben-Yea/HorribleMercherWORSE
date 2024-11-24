@@ -4,21 +4,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Marketplace Interface</title>
+    <title>Marketplace</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
-
     <div class="header">
         <h1>Marketplace</h1>
-        <div class="search-box">
-            <input type="text" id="search" placeholder="Search for items...">
+        <div class="search-wrapper">
+            <div class="search-box">
+                <input type="text" id="search" placeholder="Search for items...">
+                <ul id="suggestions"></ul>
+            </div>
             <button id="pin-button">Pin</button>
-            <ul id="suggestions" style="list-style: none; padding: 0; margin: 0; position: absolute;"></ul>
         </div>
     </div>
-
     <div class="pinned-section">
         <div class="pinned-items" id="buying-section">
             <h3>Buying</h3>
@@ -29,45 +29,39 @@
             <div id="selling-cards"></div>
         </div>
     </div>
+    <div class="table-container">
+        <table class="table" id="item-table">
+            <thead>
+                <tr>
+                    <th>Item ID</th>
+                    <th>Lowest Sell Price</th>
+                    <th>Highest Buy Price</th>
+                    <th>Lowest Price Volume</th>
+                    <th>Highest Price Volume</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Rows will be dynamically populated here -->
+            </tbody>
+        </table>
+    </div>
 
-    <table class="table" id="item-table">
-        <thead>
-            <tr>
-                <th>Item ID</th>
-                <th>Lowest Sell Price</th>
-                <th>Highest Buy Price</th>
-                <th>Lowest Price Volume</th>
-                <th>Highest Price Volume</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>1</td>
-                <td>100</td>
-                <td>120</td>
-                <td>50</td>
-                <td>200</td>
-            </tr>
-            <tr>
-                <td>2</td>
-                <td>150</td>
-                <td>170</td>
-                <td>30</td>
-                <td>100</td>
-            </tr>
-            <tr>
-                <td>3</td>
-                <td>50</td>
-                <td>60</td>
-                <td>100</td>
-                <td>300</td>
-            </tr>
-        </tbody>
-    </table>
+    <div class="settings-icon" title="Settings">
+        <img src="https://cdn-icons-png.flaticon.com/512/3524/3524659.png" alt="Settings" />
+    </div>
+    <div class="settings-box">
+        <h3>Settings</h3>
+        <label class="toggle-switch">
+            <input type="checkbox" id="night-mode-toggle">
+            <span class="slider"></span>
+            <span class="label">Night Mode</span>
+        </label>
+    </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="search.js"></script>
-    <script src="pin.js"></script>
+    <script src="main.js" defer></script>
+    <script src="search.js" defer></script>
+    <script src="pin.js" defer></script>
 </body>
 
 </html>

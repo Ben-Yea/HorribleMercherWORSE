@@ -1,65 +1,80 @@
 $(document).ready(function () {
     const items = [];
-    $('#item-table tbody tr').each(function () {
-        const itemName = $(this).find('td:first').text().trim();
-        items.push(itemName);
+    const suggestionBox = $('#suggestions');
+    const searchInput = $('#search');
+
+    // Handle the tablePopulated event to initialize the items array with item names
+    window.addEventListener('tablePopulated', (event) => {
+        const data = event.detail;
+
+        // Ensure itemIdMap is available globally
+        if (window.itemIdMap) {
+            items.length = 0; // Clear existing items
+            data.forEach(item => {
+                const itemName = window.itemIdMap[String(item.itemId)] || `Unknown Item (${item.itemId})`; // Use formatted name
+                items.push(itemName);
+            });
+            console.log('Items array initialized with names:', items); // Debugging
+        } else {
+            console.error('itemIdMap is not available');
+        }
     });
 
-    /**
-     * Generate and display suggestions based on search input.
-     * Clears suggestions if input is empty.
-     * @param {string} searchValue - The current value in the search bar.
-     */
+    // Populate the suggestion box
     function populateSuggestions(searchValue) {
-        const suggestionBox = $('#suggestions');
         suggestionBox.empty(); // Clear previous suggestions
 
         if (!searchValue.trim()) {
-            suggestionBox.removeClass('visible'); // Hide suggestions if input is empty
+            suggestionBox.removeClass('visible');
             return;
         }
 
         const suggestions = items.filter(item =>
-            item.toLowerCase().includes(searchValue)
+            item.toLowerCase().includes(searchValue.toLowerCase())
         );
 
         if (suggestions.length > 0) {
-            suggestionBox.addClass('visible'); // Show suggestions
+            suggestionBox.addClass('visible');
             suggestions.forEach(item => {
                 suggestionBox.append(`<li class="suggestion-item">${item}</li>`);
             });
         } else {
-            suggestionBox.removeClass('visible'); // Hide if no matches
-        }
-
-        // Click event for selecting a suggestion
-        $('.suggestion-item').on('click', function () {
-            $('#search').val($(this).text());
-            suggestionBox.removeClass('visible'); // Hide after selection
-        });
-    }
-
-
-    /**
-     * Autofill the search input with the first suggestion when TAB is pressed.
-     * @param {Event} e - The keydown event.
-     */
-    function handleTabAutofill(e) {
-        if (e.key === 'Tab') {
-            e.preventDefault(); // Prevent default tabbing behavior
-            const firstSuggestion = $('#suggestions .suggestion-item:first').text();
-            if (firstSuggestion) {
-                $('#search').val(firstSuggestion);
-                $('#suggestions').empty(); // Clear suggestions after autofill
-            }
+            suggestionBox.removeClass('visible');
         }
     }
 
-    // Bind input and keydown events
-    $('#search').on('input', function () {
-        const searchValue = $(this).val().toLowerCase();
+    // Hide suggestions
+    function hideSuggestions() {
+        suggestionBox.removeClass('visible');
+        suggestionBox.empty();
+    }
+
+    // Event listeners for the search input
+    searchInput.on('input', function () {
+        const searchValue = $(this).val();
         populateSuggestions(searchValue);
     });
 
-    $('#search').on('keydown', handleTabAutofill);
+    // Hide suggestions on ESC
+    searchInput.on('keydown', function (e) {
+        if (e.key === 'Escape') {
+            hideSuggestions();
+        }
+    });
+
+    // Hide suggestions when clicking outside
+    $(document).on('click', function (e) {
+        if (
+            !$(e.target).closest('#search').length &&
+            !$(e.target).closest('#suggestions').length
+        ) {
+            hideSuggestions();
+        }
+    });
+
+    // Handle click on a suggestion
+    $(document).on('click', '.suggestion-item', function () {
+        searchInput.val($(this).text()); // Fill the search box
+        hideSuggestions(); // Hide suggestions
+    });
 });
