@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const apiUrl = 'https://query.idleclans.com/api/PlayerMarket/items/prices/latest';
     const itemJsonUrl = 'itemIdNames.json';
     let itemIdMap = {};
+    let refreshInterval = 30; // Time in seconds for refresh
 
     // Helper function to format item names
     function formatItemName(name) {
@@ -9,6 +10,12 @@ document.addEventListener('DOMContentLoaded', () => {
             .split('_')
             .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
             .join(' ');
+    }
+
+    // Helper function to format numbers with comma separators
+    function formatNumber(num) {
+        if (isNaN(num)) return num; // If it's not a number, return as is
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     }
 
     // Load item names from the JSON file or localStorage
@@ -59,10 +66,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${itemName}</td>
-                    <td>${item.lowestSellPrice}</td>
-                    <td>${item.highestBuyPrice}</td>
-                    <td>${item.lowestPriceVolume}</td>
-                    <td>${item.highestPriceVolume}</td>
+                    <td>${formatNumber(item.lowestSellPrice)}</td>
+                    <td>${formatNumber(item.highestBuyPrice)}</td>
+                    <td>${formatNumber(item.lowestPriceVolume)}</td>
+                    <td>${formatNumber(item.highestPriceVolume)}</td>
                 `;
                 tableBody.appendChild(row);
             });
@@ -74,10 +81,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Countdown timer function
+    function startRefreshTimer() {
+        const timerElement = document.querySelector('#refresh-timer');
+        let remainingTime = refreshInterval;
+
+        const updateTimer = () => {
+            if (remainingTime <= 0) {
+                remainingTime = refreshInterval;
+            }
+            timerElement.textContent = `Next refresh in: ${remainingTime}s`;
+            remainingTime--;
+        };
+
+        updateTimer(); // Initial call to display the timer immediately
+        setInterval(updateTimer, 1000); // Update timer every second
+    }
+
     // Load item names and then fetch the market data
     async function initialize() {
         await loadItemNames(); // Load the item names first
         await fetchAndPopulateTable(); // Then populate the table with market data
+        setInterval(fetchAndPopulateTable, refreshInterval * 1000); // Auto-refresh the data every 30 seconds
+        startRefreshTimer(); // Start the refresh countdown timer
     }
 
     // Run the initialization

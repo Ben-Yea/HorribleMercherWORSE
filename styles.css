@@ -177,6 +177,16 @@ body {
     background-color: #c0392b;
 }
 
+.card p {
+    max-width: 60px;
+    /* Set a maximum width for the item name */
+    white-space: nowrap;
+    /* Prevent text from wrapping to a new line */
+    text-overflow: auto;
+    /* Display an ellipsis (...) for overflow text */
+}
+
+
 .table-container {
     max-height: calc(100vh - 200px);
     overflow-y: auto;
@@ -444,4 +454,21 @@ body.night-mode .suggestion-item {
 body.night-mode .suggestion-item:hover {
     background: #353544;
     color: #ffffff;
+}
+
+.custom-input {
+    margin-left: 200px;
+    /* Adjust this value to move it to the right as needed */
+}
+
+.arrow-box {
+    margin-left: 100px;
+    /* Move the entire arrow box to the right */
+    display: flex;
+    gap: 5px;
+    /* Adjust spacing between the arrows */
+}
+
+#refresh-timer {
+    padding-bottom: 15px;
 }

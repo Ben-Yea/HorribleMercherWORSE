@@ -39,11 +39,24 @@ $(document).ready(function () {
     }
 
     /**
+     * Helper function to format numbers with comma separators.
+     * @param {number|string} num - The number to format.
+     * @returns {string} - The formatted number with commas.
+     */
+    function formatNumber(num) {
+        if (isNaN(num)) return num; // If it's not a number, return as is
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    /**
      * Create a pinned card with fields specific to Buying or Selling.
      */
     function createPinnedCard(itemId, lowestSellPrice, highestBuyPrice, type) {
         // Access the item name from itemIdMap using the global window object
         const itemName = window.itemIdMap[String(itemId)] || `Unknown Item (${itemId})`;
+
+        const formattedLowestSellPrice = formatNumber(lowestSellPrice);
+        const formattedHighestBuyPrice = formatNumber(highestBuyPrice);
 
         const fields =
             type === 'buying'
@@ -55,7 +68,7 @@ $(document).ready(function () {
                            class="price-input" 
                            data-lowest-sell-price="${lowestSellPrice}" />
                 </div>
-                <p><strong>Lowest Sell Price:</strong> ${lowestSellPrice}</p>
+                <p><strong>Lowest Sell Price:</strong> ${formattedLowestSellPrice}</p>
               `
                 : `
                 <p><strong>${itemName}</strong></p>
@@ -65,7 +78,7 @@ $(document).ready(function () {
                            class="price-input" 
                            data-highest-buy-price="${highestBuyPrice}" />
                 </div>
-                <p><strong>Highest Buy Price:</strong> ${highestBuyPrice}</p>
+                <p><strong>Highest Buy Price:</strong> ${formattedHighestBuyPrice}</p>
               `;
 
         return `
@@ -80,7 +93,6 @@ $(document).ready(function () {
                 <button class="unpin-btn">Unpin</button>
             </div>`;
     }
-
 
     // Handle pin button click to create a new Buying pin
     $('#pin-button').on('click', function () {
@@ -114,7 +126,6 @@ $(document).ready(function () {
 
         if (!itemFound) alert('Item not found.');
     });
-
 
     // Handle input changes to apply validation
     $(document).on('input', '.price-input', function () {
