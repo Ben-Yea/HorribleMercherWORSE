@@ -39,24 +39,11 @@ $(document).ready(function () {
     }
 
     /**
-     * Helper function to format numbers with comma separators.
-     * @param {number|string} num - The number to format.
-     * @returns {string} - The formatted number with commas.
-     */
-    function formatNumber(num) {
-        if (isNaN(num)) return num; // If it's not a number, return as is
-        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-    }
-
-    /**
      * Create a pinned card with fields specific to Buying or Selling.
      */
     function createPinnedCard(itemId, lowestSellPrice, highestBuyPrice, type) {
         // Access the item name from itemIdMap using the global window object
         const itemName = window.itemIdMap[String(itemId)] || `Unknown Item (${itemId})`;
-
-        const formattedLowestSellPrice = formatNumber(lowestSellPrice);
-        const formattedHighestBuyPrice = formatNumber(highestBuyPrice);
 
         const fields =
             type === 'buying'
@@ -66,9 +53,9 @@ $(document).ready(function () {
                     <label for="customInput-${itemId}">Your Price:</label>
                     <input type="text" id="customInput-${itemId}" 
                            class="price-input" 
-                           data-lowest-sell-price="${lowestSellPrice}" />
+                           data-highest-buy-price="${highestBuyPrice}" />
                 </div>
-                <p><strong>Lowest Sell Price:</strong> ${formattedLowestSellPrice}</p>
+                <p><strong>Highest Buy Price:</strong> ${highestBuyPrice}</p>
               `
                 : `
                 <p><strong>${itemName}</strong></p>
@@ -76,9 +63,9 @@ $(document).ready(function () {
                     <label for="customInput-${itemId}">Your Price:</label>
                     <input type="text" id="customInput-${itemId}" 
                            class="price-input" 
-                           data-highest-buy-price="${highestBuyPrice}" />
+                           data-lowest-sell-price="${lowestSellPrice}" />
                 </div>
-                <p><strong>Highest Buy Price:</strong> ${formattedHighestBuyPrice}</p>
+                <p><strong>Lowest Sell Price:</strong> ${lowestSellPrice}</p>
               `;
 
         return `
@@ -93,6 +80,7 @@ $(document).ready(function () {
                 <button class="unpin-btn">Unpin</button>
             </div>`;
     }
+
 
     // Handle pin button click to create a new Buying pin
     $('#pin-button').on('click', function () {
@@ -127,6 +115,7 @@ $(document).ready(function () {
         if (!itemFound) alert('Item not found.');
     });
 
+
     // Handle input changes to apply validation
     $(document).on('input', '.price-input', function () {
         let inputValue = $(this).val().replace(/,/g, '');
@@ -142,13 +131,13 @@ $(document).ready(function () {
         const isSelling = card.data('type') === 'selling';
 
         if (isBuying) {
-            const lowestSellPrice = parseFloat(card.data('lowest-sell-price'));
-            toggleFlash(card, inputValue && parseFloat(inputValue.replace(/,/g, '')) < lowestSellPrice);
+            const highestBuyPrice = parseFloat(card.data('highest-buy-price'));
+            toggleFlash(card, inputValue && parseFloat(inputValue.replace(/,/g, '')) > highestBuyPrice);
         }
 
         if (isSelling) {
-            const highestBuyPrice = parseFloat(card.data('highest-buy-price'));
-            toggleFlash(card, inputValue && parseFloat(inputValue.replace(/,/g, '')) > highestBuyPrice);
+            const lowestSellPrice = parseFloat(card.data('lowest-sell-price'));
+            toggleFlash(card, inputValue && parseFloat(inputValue.replace(/,/g, '')) < lowestSellPrice);
         }
     });
 
