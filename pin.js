@@ -132,12 +132,12 @@ $(document).ready(function () {
 
         if (isBuying) {
             const highestBuyPrice = parseFloat(card.data('highest-buy-price'));
-            toggleFlash(card, inputValue && parseFloat(inputValue.replace(/,/g, '')) > highestBuyPrice);
+            toggleFlash(card, inputValue && parseFloat(inputValue.replace(/,/g, '')) < highestBuyPrice);
         }
 
         if (isSelling) {
             const lowestSellPrice = parseFloat(card.data('lowest-sell-price'));
-            toggleFlash(card, inputValue && parseFloat(inputValue.replace(/,/g, '')) < lowestSellPrice);
+            toggleFlash(card, inputValue && parseFloat(inputValue.replace(/,/g, '')) > lowestSellPrice);
         }
     });
 
