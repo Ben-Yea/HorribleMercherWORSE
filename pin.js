@@ -1,4 +1,3 @@
-
 $(document).ready(function () {
     /**
      * Apply the flashing effect for a card.
@@ -19,6 +18,22 @@ $(document).ready(function () {
         if (shouldFlash) {
             card.addClass('flash-red');
         }
+
+        // Update the tab title after toggling flash
+        updateTabTitle();
+    }
+
+
+    function updateTabTitle() {
+        // Count the number of flashing cards
+        const flashingCount = $('.card.flash-red').length;
+
+        // Set the tab title with the count
+        if (flashingCount > 0) {
+            document.title = `Market Mercher (${flashingCount})`;
+        } else {
+            document.title = 'Market Mercher'; // Reset to default if no flashing
+        }
     }
 
     /**
@@ -32,8 +47,8 @@ $(document).ready(function () {
     }
 
     /**
-     * Create a pinned card with fields specific to Buying or Selling.
-     */
+ * Create a pinned card with fields specific to Buying or Selling.
+ */
     function createPinnedCard(itemId, lowestSellPrice, highestBuyPrice, type) {
         const itemName = window.itemIdMap[String(itemId)] || `Unknown Item (${itemId})`;
         const formattedLowestSellPrice = formatNumber(lowestSellPrice);
@@ -42,52 +57,90 @@ $(document).ready(function () {
         const fields =
             type === 'buying'
                 ? `
-                <p><strong>${itemName}</strong></p>
-                <div class="custom-input">
-                    <label for="customInput-${itemId}">Your Price:</label>
-                    <input type="text" id="customInput-${itemId}" 
-                           class="price-input" 
-                           data-highest-buy-price="${highestBuyPrice}" />
-                </div>
-                <p><strong>Highest Buy Price:</strong> ${formattedHighestBuyPrice}</p>
-              `
+                    <p><strong>${itemName}</strong></p>
+                    <div class="custom-input">
+                        <label for="customInput-${itemId}">Your Price:</label>
+                        <input type="text" id="customInput-${itemId}" 
+                               class="price-input" 
+                               data-highest-buy-price="${highestBuyPrice}" />
+                    </div>
+                    <p><strong>Highest Buy Price:</strong> ${formattedHighestBuyPrice}</p>
+                  `
                 : `
-                <p><strong>${itemName}</strong></p>
-                <div class="custom-input">
-                    <label for="customInput-${itemId}">Your Price:</label>
-                    <input type="text" id="customInput-${itemId}" 
-                           class="price-input" 
-                           data-lowest-sell-price="${lowestSellPrice}" />
-                </div>
-                <p><strong>Lowest Sell Price:</strong> ${formattedLowestSellPrice}</p>
-              `;
+                    <p><strong>${itemName}</strong></p>
+                    <div class="custom-input">
+                        <label for="customInput-${itemId}">Your Price:</label>
+                        <input type="text" id="customInput-${itemId}" 
+                               class="price-input" 
+                               data-lowest-sell-price="${lowestSellPrice}" />
+                    </div>
+                    <p><strong>Lowest Sell Price:</strong> ${formattedLowestSellPrice}</p>
+                  `;
 
         return `
-            <div class="card" data-item-id="${itemId}" data-type="${type}" 
-                 data-lowest-sell-price="${lowestSellPrice}" 
-                 data-highest-buy-price="${highestBuyPrice}">
-                ${fields}
-                <div class="arrow-box">
-                    <button class="arrow-btn move-left"><</button>
-                    <button class="arrow-btn move-right">></button>
-                </div>
-                <button class="unpin-btn">Unpin</button>
-            </div>`;
+                <div class="card" data-item-id="${itemId}" data-type="${type}" 
+                     data-lowest-sell-price="${lowestSellPrice}" 
+                     data-highest-buy-price="${highestBuyPrice}">
+                    ${fields}
+                    <div class="arrow-box">
+                        <button class="arrow-btn move-left"><</button>
+                        <button class="arrow-btn move-right">></button>
+                    </div>
+                    <button class="unpin-btn">Unpin</button>
+                </div>`;
+    }
+
+    // Save pinned cards to localStorage
+    function savePinsToLocalStorage() {
+        const pinnedData = [];
+
+        $('.card').each(function () {
+            const card = $(this);
+            const itemId = card.data('item-id');
+            const type = card.data('type');
+            const lowestSellPrice = parseFloat(card.data('lowest-sell-price')) || 0;
+            const highestBuyPrice = parseFloat(card.data('highest-buy-price')) || 0;
+
+            pinnedData.push({ itemId, type, lowestSellPrice, highestBuyPrice });
+        });
+
+        localStorage.setItem('pinnedCards', JSON.stringify(pinnedData));
+        console.log('Pinned cards saved:', pinnedData);
+    }
+
+    // Load pinned cards from localStorage
+    function loadPinsFromLocalStorage() {
+        const pinnedData = JSON.parse(localStorage.getItem('pinnedCards')) || [];
+
+        pinnedData.forEach(pin => {
+            const cardHtml = createPinnedCard(
+                pin.itemId,
+                pin.lowestSellPrice,
+                pin.highestBuyPrice,
+                pin.type
+            );
+            $(`#${pin.type}-cards`).append(cardHtml); // Add card to the correct section
+        });
+
+        console.log('Pinned cards loaded:', pinnedData);
     }
 
     // Handle input changes to apply validation
     $(document).on('input', '.price-input', function () {
-        let inputValue = $(this).val().replace(/,/g, '');
+        let inputValue = $(this).val().replace(/,/g, ''); // Remove existing commas
         const card = $(this).closest('.card');
         const isBuying = card.data('type') === 'buying';
         const isSelling = card.data('type') === 'selling';
 
         if (isNaN(inputValue) || inputValue === '') {
             toggleFlash(card, false);
+            $(this).val(''); // Clear input if invalid
             return;
         }
 
+        // Parse and reformat input with commas
         inputValue = parseFloat(inputValue);
+        $(this).val(inputValue.toLocaleString());
 
         if (isBuying) {
             const highestBuyPrice = parseFloat(card.data('highest-buy-price'));
@@ -98,6 +151,9 @@ $(document).ready(function () {
             const lowestSellPrice = parseFloat(card.data('lowest-sell-price'));
             toggleFlash(card, inputValue > lowestSellPrice);
         }
+
+        // Save the updated inputs to localStorage
+        savePinsToLocalStorage();
     });
 
     // Handle pin button click to create a new Buying pin
@@ -124,6 +180,7 @@ $(document).ready(function () {
                         'buying'
                     );
                     $('#buying-cards').append(cardHtml);
+                    savePinsToLocalStorage(); // Save pins after adding
                     itemFound = true;
                     return false;
                 }
@@ -134,7 +191,6 @@ $(document).ready(function () {
     }
 
     $('#pin-button').on('click', handlePinAction);
-
     // Add event listener for ENTER key to pin item
     $('#search').on('keydown', function (e) {
         if (e.key === 'Enter') {
@@ -163,8 +219,8 @@ $(document).ready(function () {
         const isMovingToBuying = targetSection === '#buying-cards';
 
         const itemId = card.data('item-id');
-        const lowestSellPrice = card.data('lowest-sell-price');
-        const highestBuyPrice = card.data('highest-buy-price');
+        const lowestSellPrice = parseFloat(card.data('lowest-sell-price'));
+        const highestBuyPrice = parseFloat(card.data('highest-buy-price'));
 
         card.remove();
 
@@ -175,6 +231,7 @@ $(document).ready(function () {
             isMovingToBuying ? 'buying' : 'selling'
         );
         $(targetSection).append(updatedCardHtml);
+        savePinsToLocalStorage(); // Save pins after moving
     });
 
     // Handle unpin button
@@ -182,6 +239,7 @@ $(document).ready(function () {
         const card = $(this).closest('.card');
         toggleFlash(card, false);
         card.remove();
+        savePinsToLocalStorage(); // Save pins after unpinning
     });
 
     // Listen for table updates and synchronize pinned cards
@@ -199,37 +257,26 @@ $(document).ready(function () {
                 const type = card.data('type');
 
                 if (type === 'buying') {
-                    // Update and re-evaluate for buying cards
                     const newHighestBuyPrice = itemData.highestBuyPrice;
                     card.find('.price-input').data('highest-buy-price', newHighestBuyPrice);
                     card.find('p:contains("Highest Buy Price")').html(`<strong>Highest Buy Price:</strong> ${formatNumber(newHighestBuyPrice)}`);
 
                     const userPrice = parseFloat(card.find('.price-input').val().replace(/,/g, ''));
-                    if (!isNaN(userPrice)) {
-                        // Trigger flashing if user price is lower
-                        toggleFlash(card, userPrice < newHighestBuyPrice);
-                    } else {
-                        // Stop flashing if no valid input
-                        toggleFlash(card, false);
-                    }
+                    toggleFlash(card, !isNaN(userPrice) && userPrice < newHighestBuyPrice);
                 } else if (type === 'selling') {
-                    // Update and re-evaluate for selling cards
                     const newLowestSellPrice = itemData.lowestSellPrice;
                     card.find('.price-input').data('lowest-sell-price', newLowestSellPrice);
                     card.find('p:contains("Lowest Sell Price")').html(`<strong>Lowest Sell Price:</strong> ${formatNumber(newLowestSellPrice)}`);
 
                     const userPrice = parseFloat(card.find('.price-input').val().replace(/,/g, ''));
-                    if (!isNaN(userPrice)) {
-                        // Trigger flashing if user price is higher
-                        toggleFlash(card, userPrice > newLowestSellPrice);
-                    } else {
-                        // Stop flashing if no valid input
-                        toggleFlash(card, false);
-                    }
+                    toggleFlash(card, !isNaN(userPrice) && userPrice > newLowestSellPrice);
                 }
             } else {
                 console.warn(`Item with ID ${itemId} not found in updated data.`);
             }
         });
     });
+
+    // Load pins from localStorage when the document is ready
+    loadPinsFromLocalStorage();
 });

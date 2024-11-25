@@ -67,7 +67,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             data.forEach(item => {
                 const itemIdStr = String(item.itemId);
-                const itemName = itemIdMap[itemIdStr] || `Unknown Item (${itemIdStr})`;
+                const itemName = itemIdMap[itemIdStr]; // Attempt to resolve the item name
+
+                // Skip rows where item name cannot be resolved
+                if (!itemName) {
+                    console.warn(`Skipping unknown item with ID: ${itemIdStr}`);
+                    return; // Skip this item
+                }
 
                 // Check if the row for this item already exists
                 if (rowMap.has(itemIdStr)) {
@@ -118,8 +124,6 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error fetching data:', error);
         }
     }
-
-
 
 
     // Countdown timer function
