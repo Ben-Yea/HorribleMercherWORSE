@@ -63,23 +63,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 const itemIdStr = String(item.itemId);
                 const itemName = itemIdMap[itemIdStr] || `Unknown Item (${itemIdStr})`;
 
+                // Store original numeric values as data attributes for consistency
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${itemName}</td>
-                    <td>${formatNumber(item.lowestSellPrice)}</td>
-                    <td>${formatNumber(item.highestBuyPrice)}</td>
-                    <td>${formatNumber(item.lowestPriceVolume)}</td>
-                    <td>${formatNumber(item.highestPriceVolume)}</td>
+                    <td data-value="${item.lowestSellPrice}">${formatNumber(item.lowestSellPrice)}</td>
+                    <td data-value="${item.highestBuyPrice}">${formatNumber(item.highestBuyPrice)}</td>
+                    <td data-value="${item.lowestPriceVolume}">${formatNumber(item.lowestPriceVolume)}</td>
+                    <td data-value="${item.highestPriceVolume}">${formatNumber(item.highestPriceVolume)}</td>
                 `;
                 tableBody.appendChild(row);
             });
 
             console.log('Data fetched and table populated.');
-            window.dispatchEvent(new CustomEvent('tablePopulated', { detail: data }));
+
+            // Dispatch the tableUpdated event with the latest data
+            window.dispatchEvent(new CustomEvent('tableUpdated', { detail: data }));
+
         } catch (error) {
             console.error('Error fetching data:', error);
         }
     }
+
 
     // Countdown timer function
     function startRefreshTimer() {
@@ -163,8 +168,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         rows.sort((a, b) => {
-            const cellA = a.children[columnIndex].textContent.trim();
-            const cellB = b.children[columnIndex].textContent.trim();
+            const cellA = a.children[columnIndex].dataset.value || a.children[columnIndex].textContent.trim();
+            const cellB = b.children[columnIndex].dataset.value || b.children[columnIndex].textContent.trim();
 
             if (!isNaN(cellA) && !isNaN(cellB)) {
                 return ascendingOrder ? cellA - cellB : cellB - cellA;

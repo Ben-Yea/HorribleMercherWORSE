@@ -1,3 +1,4 @@
+
 $(document).ready(function () {
     /**
      * Apply the flashing effect for a card.
@@ -5,7 +6,6 @@ $(document).ready(function () {
      * @param {boolean} shouldFlash - Whether the card should flash.
      */
     function toggleFlash(card, shouldFlash) {
-        // Clear any existing flashing effect first
         if (card.data('flash-interval')) {
             clearInterval(card.data('flash-interval'));
             card.removeData('flash-interval');
@@ -16,34 +16,28 @@ $(document).ready(function () {
             'border-color': '',
         });
 
-        const isNightMode = $('body').hasClass('night-mode'); // Detect Night Mode
-
         if (shouldFlash) {
-            if (isNightMode) {
-                // Subtle flashing for Night Mode
-                let isFlashing = true;
-
-                // Save the interval ID on the card element for reference
-                card.data('flash-interval', setInterval(() => {
-                    card.css({
-                        'background-color': isFlashing ? 'rgba(255, 99, 99, 0.1)' : '#2a2a3c',
-                        'border-color': isFlashing ? 'rgba(255, 99, 99, 0.3)' : '#3c3c4e',
-                    });
-                    isFlashing = !isFlashing; // Toggle state
-                }, 500)); // Flash every 500ms
-            } else {
-                // Stronger flashing for Day Mode (CSS class)
-                card.addClass('flash-red');
-            }
+            card.addClass('flash-red');
         }
+    }
+
+    /**
+     * Helper function to format numbers with comma separators.
+     * @param {number|string} num - The number to format.
+     * @returns {string} - The formatted number with commas.
+     */
+    function formatNumber(num) {
+        if (isNaN(num)) return num;
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     }
 
     /**
      * Create a pinned card with fields specific to Buying or Selling.
      */
     function createPinnedCard(itemId, lowestSellPrice, highestBuyPrice, type) {
-        // Access the item name from itemIdMap using the global window object
         const itemName = window.itemIdMap[String(itemId)] || `Unknown Item (${itemId})`;
+        const formattedLowestSellPrice = formatNumber(lowestSellPrice);
+        const formattedHighestBuyPrice = formatNumber(highestBuyPrice);
 
         const fields =
             type === 'buying'
@@ -55,7 +49,7 @@ $(document).ready(function () {
                            class="price-input" 
                            data-highest-buy-price="${highestBuyPrice}" />
                 </div>
-                <p><strong>Highest Buy Price:</strong> ${highestBuyPrice}</p>
+                <p><strong>Highest Buy Price:</strong> ${formattedHighestBuyPrice}</p>
               `
                 : `
                 <p><strong>${itemName}</strong></p>
@@ -65,7 +59,7 @@ $(document).ready(function () {
                            class="price-input" 
                            data-lowest-sell-price="${lowestSellPrice}" />
                 </div>
-                <p><strong>Lowest Sell Price:</strong> ${lowestSellPrice}</p>
+                <p><strong>Lowest Sell Price:</strong> ${formattedLowestSellPrice}</p>
               `;
 
         return `
@@ -81,9 +75,33 @@ $(document).ready(function () {
             </div>`;
     }
 
+    // Handle input changes to apply validation
+    $(document).on('input', '.price-input', function () {
+        let inputValue = $(this).val().replace(/,/g, '');
+        const card = $(this).closest('.card');
+        const isBuying = card.data('type') === 'buying';
+        const isSelling = card.data('type') === 'selling';
+
+        if (isNaN(inputValue) || inputValue === '') {
+            toggleFlash(card, false);
+            return;
+        }
+
+        inputValue = parseFloat(inputValue);
+
+        if (isBuying) {
+            const highestBuyPrice = parseFloat(card.data('highest-buy-price'));
+            toggleFlash(card, inputValue < highestBuyPrice);
+        }
+
+        if (isSelling) {
+            const lowestSellPrice = parseFloat(card.data('lowest-sell-price'));
+            toggleFlash(card, inputValue > lowestSellPrice);
+        }
+    });
 
     // Handle pin button click to create a new Buying pin
-    $('#pin-button').on('click', function () {
+    function handlePinAction() {
         const searchValue = $('#search').val().toLowerCase();
         if (!searchValue) return alert('Please enter an item name to pin.');
 
@@ -91,10 +109,10 @@ $(document).ready(function () {
         $('#item-table tbody tr').each(function () {
             const itemName = $(this).find('td:first').text().toLowerCase();
 
-            if (itemName.includes(searchValue)) {
+            if (itemName === searchValue) {
                 const itemId = Object.keys(window.itemIdMap).find(key => window.itemIdMap[key].toLowerCase() === itemName);
-                const lowestSellPrice = $(this).find('td:nth-child(2)').text();
-                const highestBuyPrice = $(this).find('td:nth-child(3)').text();
+                const lowestSellPrice = parseFloat($(this).find('td:nth-child(2)').data('value')) || 0;
+                const highestBuyPrice = parseFloat($(this).find('td:nth-child(3)').data('value')) || 0;
 
                 const isDuplicate = $(`[data-item-id="${itemId}"]`).length > 0;
 
@@ -103,7 +121,7 @@ $(document).ready(function () {
                         itemId,
                         lowestSellPrice,
                         highestBuyPrice,
-                        'buying' // Default type is Buying
+                        'buying'
                     );
                     $('#buying-cards').append(cardHtml);
                     itemFound = true;
@@ -113,31 +131,28 @@ $(document).ready(function () {
         });
 
         if (!itemFound) alert('Item not found.');
+    }
+
+    $('#pin-button').on('click', handlePinAction);
+
+    // Add event listener for ENTER key to pin item
+    $('#search').on('keydown', function (e) {
+        if (e.key === 'Enter') {
+            handlePinAction();
+        }
     });
 
-
-    // Handle input changes to apply validation
-    $(document).on('input', '.price-input', function () {
-        let inputValue = $(this).val().replace(/,/g, '');
-        if (isNaN(inputValue) || inputValue === '') {
-            inputValue = ''; // Reset to empty if NaN or empty
-        } else {
-            inputValue = parseFloat(inputValue).toLocaleString();
-        }
-        $(this).val(inputValue);
-
-        const card = $(this).closest('.card');
-        const isBuying = card.data('type') === 'buying';
-        const isSelling = card.data('type') === 'selling';
-
-        if (isBuying) {
-            const highestBuyPrice = parseFloat(card.data('highest-buy-price'));
-            toggleFlash(card, inputValue && parseFloat(inputValue.replace(/,/g, '')) < highestBuyPrice);
-        }
-
-        if (isSelling) {
-            const lowestSellPrice = parseFloat(card.data('lowest-sell-price'));
-            toggleFlash(card, inputValue && parseFloat(inputValue.replace(/,/g, '')) > lowestSellPrice);
+    // Add event listener for TAB key to autocomplete the search
+    $('#search').on('keydown', function (e) {
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            const searchValue = $('#search').val().toLowerCase();
+            const suggestions = Object.values(window.itemIdMap).filter(name =>
+                name.toLowerCase().includes(searchValue)
+            );
+            if (suggestions.length > 0) {
+                $('#search').val(suggestions[0]);
+            }
         }
     });
 
@@ -151,10 +166,8 @@ $(document).ready(function () {
         const lowestSellPrice = card.data('lowest-sell-price');
         const highestBuyPrice = card.data('highest-buy-price');
 
-        // Remove the current card
         card.remove();
 
-        // Create and append a new card with updated fields
         const updatedCardHtml = createPinnedCard(
             itemId,
             lowestSellPrice,
@@ -167,9 +180,35 @@ $(document).ready(function () {
     // Handle unpin button
     $(document).on('click', '.unpin-btn', function () {
         const card = $(this).closest('.card');
-
-        // Stop flashing before removing
         toggleFlash(card, false);
         card.remove();
+    });
+
+    // Listen for table updates and synchronize pinned cards
+    window.addEventListener('tableUpdated', (event) => {
+        const updatedData = event.detail;
+
+        console.log('tableUpdated Event Triggered:', updatedData);
+
+        $('.card').each(function () {
+            const card = $(this);
+            const itemId = card.data('item-id');
+            const itemData = updatedData.find(item => String(item.itemId) === String(itemId));
+
+            if (itemData) {
+                const type = card.data('type');
+                if (type === 'buying') {
+                    const newHighestBuyPrice = formatNumber(itemData.highestBuyPrice);
+                    card.find('.price-input').data('highest-buy-price', itemData.highestBuyPrice);
+                    card.find('p:contains("Highest Buy Price")').html(`<strong>Highest Buy Price:</strong> ${newHighestBuyPrice}`);
+                } else if (type === 'selling') {
+                    const newLowestSellPrice = formatNumber(itemData.lowestSellPrice);
+                    card.find('.price-input').data('lowest-sell-price', itemData.lowestSellPrice);
+                    card.find('p:contains("Lowest Sell Price")').html(`<strong>Lowest Sell Price:</strong> ${newLowestSellPrice}`);
+                }
+            } else {
+                console.warn(`Item with ID ${itemId} not found in updated data.`);
+            }
+        });
     });
 });
