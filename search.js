@@ -5,19 +5,10 @@ $(document).ready(function () {
 
     // Handle the tablePopulated event to initialize the items array with item names
     window.addEventListener('tablePopulated', (event) => {
-        const data = event.detail;
-
-        // Ensure itemIdMap is available globally
-        if (window.itemIdMap) {
-            items.length = 0; // Clear existing items
-            data.forEach(item => {
-                const itemName = window.itemIdMap[String(item.itemId)] || `Unknown Item (${item.itemId})`; // Use formatted name
-                items.push(itemName);
-            });
-            console.log('Items array initialized with names:', items); // Debugging
-        } else {
-            console.error('itemIdMap is not available');
-        }
+        const updatedItems = event.detail.map(item => item.itemName);
+        items.length = 0; // Clear the items array
+        items.push(...updatedItems); // Add updated items
+        console.log('Search suggestions updated:', items); // Debugging log
     });
 
     // Populate the suggestion box

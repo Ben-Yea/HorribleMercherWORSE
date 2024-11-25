@@ -55,36 +55,71 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             const data = await response.json();
 
-            // Populate the table
             const tableBody = document.querySelector('#item-table tbody');
-            tableBody.innerHTML = ''; // Clear existing rows
+            const existingRows = Array.from(tableBody.querySelectorAll('tr'));
+
+            // Create a map of existing rows by itemId for efficient lookups
+            const rowMap = new Map();
+            existingRows.forEach(row => {
+                const itemId = row.getAttribute('data-id');
+                rowMap.set(itemId, row);
+            });
 
             data.forEach(item => {
                 const itemIdStr = String(item.itemId);
                 const itemName = itemIdMap[itemIdStr] || `Unknown Item (${itemIdStr})`;
 
-                // Store original numeric values as data attributes for consistency
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${itemName}</td>
-                    <td data-value="${item.lowestSellPrice}">${formatNumber(item.lowestSellPrice)}</td>
-                    <td data-value="${item.highestBuyPrice}">${formatNumber(item.highestBuyPrice)}</td>
-                    <td data-value="${item.lowestPriceVolume}">${formatNumber(item.lowestPriceVolume)}</td>
-                    <td data-value="${item.highestPriceVolume}">${formatNumber(item.highestPriceVolume)}</td>
-                `;
-                tableBody.appendChild(row);
+                // Check if the row for this item already exists
+                if (rowMap.has(itemIdStr)) {
+                    const row = rowMap.get(itemIdStr);
+                    const cells = row.children;
+
+                    // Update only the cells with new data
+                    cells[1].setAttribute('data-value', item.lowestSellPrice);
+                    cells[1].textContent = formatNumber(item.lowestSellPrice);
+
+                    cells[2].setAttribute('data-value', item.highestBuyPrice);
+                    cells[2].textContent = formatNumber(item.highestBuyPrice);
+
+                    cells[3].setAttribute('data-value', item.lowestPriceVolume);
+                    cells[3].textContent = formatNumber(item.lowestPriceVolume);
+
+                    cells[4].setAttribute('data-value', item.highestPriceVolume);
+                    cells[4].textContent = formatNumber(item.highestPriceVolume);
+                } else {
+                    // Add a new row if it doesn't exist
+                    const row = document.createElement('tr');
+                    row.setAttribute('data-id', itemIdStr);
+                    row.innerHTML = `
+                        <td>${itemName}</td>
+                        <td data-value="${item.lowestSellPrice}">${formatNumber(item.lowestSellPrice)}</td>
+                        <td data-value="${item.highestBuyPrice}">${formatNumber(item.highestBuyPrice)}</td>
+                        <td data-value="${item.lowestPriceVolume}">${formatNumber(item.lowestPriceVolume)}</td>
+                        <td data-value="${item.highestPriceVolume}">${formatNumber(item.highestPriceVolume)}</td>
+                    `;
+                    tableBody.appendChild(row);
+                }
             });
 
-            console.log('Data fetched and table populated.');
-
-            // Dispatch both tablePopulated and tableUpdated events
-            window.dispatchEvent(new CustomEvent('tablePopulated', { detail: data }));
+            console.log('Data fetched and table updated.');
             window.dispatchEvent(new CustomEvent('tableUpdated', { detail: data }));
+
+            // Dispatch tablePopulated event with the latest table data
+            window.dispatchEvent(new CustomEvent('tablePopulated', {
+                detail: Array.from(document.querySelectorAll('#item-table tbody tr')).map(row => {
+                    return {
+                        itemId: row.getAttribute('data-id'),
+                        itemName: row.querySelector('td:first-child').textContent,
+                    };
+                })
+            }));
 
         } catch (error) {
             console.error('Error fetching data:', error);
         }
     }
+
+
 
 
     // Countdown timer function
