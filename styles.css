@@ -147,6 +147,18 @@ body {
     animation: flashRed 0.8s infinite alternate;
 }
 
+@keyframes flashRed {
+    0% {
+        background-color: #ff6666;
+        /* Brighter red */
+    }
+
+    100% {
+        background-color: #660000;
+        /* Darker red for night mode compatibility */
+    }
+}
+
 .card .card-content {
     flex: 1;
 }
@@ -231,15 +243,6 @@ body {
     color: #555;
 }
 
-@keyframes flashRed {
-    0% {
-        background-color: #ffcccc;
-    }
-
-    100% {
-        background-color: #f9f9f9;
-    }
-}
 
 body.night-mode {
     background-color: #333;
