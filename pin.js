@@ -197,14 +197,35 @@ $(document).ready(function () {
 
             if (itemData) {
                 const type = card.data('type');
+
                 if (type === 'buying') {
-                    const newHighestBuyPrice = formatNumber(itemData.highestBuyPrice);
-                    card.find('.price-input').data('highest-buy-price', itemData.highestBuyPrice);
-                    card.find('p:contains("Highest Buy Price")').html(`<strong>Highest Buy Price:</strong> ${newHighestBuyPrice}`);
+                    // Update and re-evaluate for buying cards
+                    const newHighestBuyPrice = itemData.highestBuyPrice;
+                    card.find('.price-input').data('highest-buy-price', newHighestBuyPrice);
+                    card.find('p:contains("Highest Buy Price")').html(`<strong>Highest Buy Price:</strong> ${formatNumber(newHighestBuyPrice)}`);
+
+                    const userPrice = parseFloat(card.find('.price-input').val().replace(/,/g, ''));
+                    if (!isNaN(userPrice)) {
+                        // Trigger flashing if user price is lower
+                        toggleFlash(card, userPrice < newHighestBuyPrice);
+                    } else {
+                        // Stop flashing if no valid input
+                        toggleFlash(card, false);
+                    }
                 } else if (type === 'selling') {
-                    const newLowestSellPrice = formatNumber(itemData.lowestSellPrice);
-                    card.find('.price-input').data('lowest-sell-price', itemData.lowestSellPrice);
-                    card.find('p:contains("Lowest Sell Price")').html(`<strong>Lowest Sell Price:</strong> ${newLowestSellPrice}`);
+                    // Update and re-evaluate for selling cards
+                    const newLowestSellPrice = itemData.lowestSellPrice;
+                    card.find('.price-input').data('lowest-sell-price', newLowestSellPrice);
+                    card.find('p:contains("Lowest Sell Price")').html(`<strong>Lowest Sell Price:</strong> ${formatNumber(newLowestSellPrice)}`);
+
+                    const userPrice = parseFloat(card.find('.price-input').val().replace(/,/g, ''));
+                    if (!isNaN(userPrice)) {
+                        // Trigger flashing if user price is higher
+                        toggleFlash(card, userPrice > newLowestSellPrice);
+                    } else {
+                        // Stop flashing if no valid input
+                        toggleFlash(card, false);
+                    }
                 }
             } else {
                 console.warn(`Item with ID ${itemId} not found in updated data.`);
