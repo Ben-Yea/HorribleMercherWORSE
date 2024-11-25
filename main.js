@@ -77,7 +77,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             console.log('Data fetched and table populated.');
 
-            // Dispatch the tableUpdated event with the latest data
+            // Dispatch both tablePopulated and tableUpdated events
+            window.dispatchEvent(new CustomEvent('tablePopulated', { detail: data }));
             window.dispatchEvent(new CustomEvent('tableUpdated', { detail: data }));
 
         } catch (error) {
